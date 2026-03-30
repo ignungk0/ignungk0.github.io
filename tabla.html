@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="periodica.css">
+        <title>Tabla Periódica</title>
+    </head>
+    <body>
+        <p>Hecha por Lourdes Rivas (29/3/2026)</p>
+        <div class="tabla-wrapper">
+            <div class="sidebar-left">
+                <button class="btn-sidebar" id="btn-dark">Modo Oscuro</button>
+                <button class="btn-sidebar" onclick="window.location.href='aprender.html'">Aprender</button>
+            </div>
+            <main class="main-col">
+                <div class="controles">
+                    <button data-filter="all">Mostrar todo</button>
+                    <button data-filter="metal-alcalino">Alcalinos</button>
+                    <button data-filter="metal-alcalinoterreo">Alcalinotérreos</button>
+                    <button data-filter="metal-de-transicion">Transición</button>
+                    <button data-filter="metal-posttransicional">Posttransicional</button>
+                    <button data-filter="metaloide">Metaloides</button>
+                    <button data-filter="no-metal">No metales</button>
+                    <button data-filter="halógeno">Halógenos</button>
+                    <button data-filter="gas-noble">Gases nobles</button>
+                </div>
+                <div class="grupos" id="grupos"></div>
+                <div class="tabla-periodica" id="tabla"></div>
+            </main>
+        </div>
+
+        <!-- POPUP -->
+        <div class="elemento-popup" id="elemento-popup">
+            <div class="popup-numero" id="popup-numero"></div>
+            <div class="popup-simbolo" id="popup-simbolo"></div>
+            <div class="popup-nombre" id="popup-nombre"></div>
+            <div class="popup-masa-label">Masa atómica</div>
+            <div class="popup-masa" id="popup-masa"></div>
+        </div>
+
+        <script>
+            const elementos = {
+                H:  { number: 1,  name: 'Hidrógeno', mass: '1.008',    category: 'no-metal' },
+                He: { number: 2,  name: 'Helio',    mass: '4.0026',  category: 'gas-noble' },
+                Li: { number: 3,  name: 'Litio',    mass: '6.94',    category: 'metal-alcalino' },
+                Be: { number: 4,  name: 'Berilio',  mass: '9.0122',  category: 'metal-alcalinoterreo' },
+                B:  { number: 5,  name: 'Boro',     mass: '10.81',   category: 'metaloide' },
+                C:  { number: 6,  name: 'Carbono',  mass: '12.011',  category: 'no-metal' },
+                N:  { number: 7,  name: 'Nitrógeno',mass: '14.007',  category: 'no-metal' },
+                O:  { number: 8,  name: 'Oxígeno',  mass: '15.999',  category: 'no-metal' },
+                F:  { number: 9,  name: 'Flúor',    mass: '18.998',  category: 'halógeno' },
+                Ne: { number: 10, name: 'Neón',     mass: '20.180',  category: 'gas-noble' },
+                Na: { number: 11, name: 'Sodio',    mass: '22.990',  category: 'metal-alcalino' },
+                Mg: { number: 12, name: 'Magnesio', mass: '24.305',  category: 'metal-alcalinoterreo' },
+                Al: { number: 13, name: 'Aluminio', mass: '26.982',  category: 'metal-posttransicional' },
+                Si: { number: 14, name: 'Silicio',  mass: '28.085',  category: 'metaloide' },
+                P:  { number: 15, name: 'Fósforo',  mass: '30.974',  category: 'no-metal' },
+                S:  { number: 16, name: 'Azufre',   mass: '32.06',   category: 'no-metal' },
+                Cl: { number: 17, name: 'Cloro',    mass: '35.45',   category: 'halógeno' },
+                Ar: { number: 18, name: 'Argón',    mass: '39.948',  category: 'gas-noble' },
+                K:  { number: 19, name: 'Potasio',  mass: '39.098',  category: 'metal-alcalino' },
+                Ca: { number: 20, name: 'Calcio',   mass: '40.078',  category: 'metal-alcalinoterreo' },
+                Sc: { number: 21, name: 'Escandio', mass: '44.956',  category: 'metal-de-transicion' },
+                Ti: { number: 22, name: 'Titanio',  mass: '47.867',  category: 'metal-de-transicion' },
+                V:  { number: 23, name: 'Vanadio',  mass: '50.942',  category: 'metal-de-transicion' },
+                Cr: { number: 24, name: 'Cromo',    mass: '51.996',  category: 'metal-de-transicion' },
+                Mn: { number: 25, name: 'Manganeso',mass: '54.938',  category: 'metal-de-transicion' },
+                Fe: { number: 26, name: 'Hierro',   mass: '55.845',  category: 'metal-de-transicion' },
+                Co: { number: 27, name: 'Cobalto',  mass: '58.933',  category: 'metal-de-transicion' },
+                Ni: { number: 28, name: 'Níquel',   mass: '58.693',  category: 'metal-de-transicion' },
+                Cu: { number: 29, name: 'Cobre',    mass: '63.546',  category: 'metal-de-transicion' },
+                Zn: { number: 30, name: 'Zinc',     mass: '65.38',   category: 'metal-de-transicion' },
+                Ga: { number: 31, name: 'Galio',    mass: '69.723',  category: 'metal-posttransicional' },
+                Ge: { number: 32, name: 'Germanio', mass: '72.630',  category: 'metaloide' },
+                As: { number: 33, name: 'Arsénico', mass: '74.922',  category: 'metaloide' },
+                Se: { number: 34, name: 'Selenio',  mass: '78.971',  category: 'no-metal' },
+                Br: { number: 35, name: 'Bromo',    mass: '79.904',  category: 'halógeno' },
+                Kr: { number: 36, name: 'Kriptón',  mass: '83.798',  category: 'gas-noble' },
+                Rb: { number: 37, name: 'Rubidio',  mass: '85.468',  category: 'metal-alcalino' },
+                Sr: { number: 38, name: 'Estroncio',mass: '87.62',   category: 'metal-alcalinoterreo' },
+                Y:  { number: 39, name: 'Itrio',    mass: '88.906',  category: 'metal-de-transicion' },
+                Zr: { number: 40, name: 'Circonio', mass: '91.224',  category: 'metal-de-transicion' },
+                Nb: { number: 41, name: 'Niobio',   mass: '92.906',  category: 'metal-de-transicion' },
+                Mo: { number: 42, name: 'Molibdeno',mass: '95.95',   category: 'metal-de-transicion' },
+                Tc: { number: 43, name: 'Tecnecio', mass: '(98)',    category: 'metal-de-transicion' },
+                Ru: { number: 44, name: 'Rutenio',  mass: '101.07',  category: 'metal-de-transicion' },
+                Rh: { number: 45, name: 'Rodio',    mass: '102.91',  category: 'metal-de-transicion' },
+                Pd: { number: 46, name: 'Paladio',  mass: '106.42',  category: 'metal-de-transicion' },
+                Ag: { number: 47, name: 'Plata',    mass: '107.87',  category: 'metal-de-transicion' },
+                Cd: { number: 48, name: 'Cadmio',   mass: '112.41',  category: 'metal-de-transicion' },
+                In: { number: 49, name: 'Indio',    mass: '114.82',  category: 'metal-posttransicional' },
+                Sn: { number: 50, name: 'Estaño',   mass: '118.71',  category: 'metal-posttransicional' },
+                Sb: { number: 51, name: 'Antimonio',mass: '121.76',  category: 'metaloide' },
+                Te: { number: 52, name: 'Telurio',  mass: '127.60',  category: 'metaloide' },
+                I:  { number: 53, name: 'Yodo',     mass: '126.90',  category: 'halógeno' },
+                Xe: { number: 54, name: 'Xenón',    mass: '131.29',  category: 'gas-noble' },
+                Cs: { number: 55, name: 'Cesio',    mass: '132.91',  category: 'metal-alcalino' },
+                Ba: { number: 56, name: 'Bario',    mass: '137.33',  category: 'metal-alcalinoterreo' },
+                La: { number: 57, name: 'Lantano',  mass: '138.91',  category: 'lantanido' },
+                Ce: { number: 58, name: 'Cerio',    mass: '140.12',  category: 'lantanido' },
+                Pr: { number: 59, name: 'Praseodimio',mass:'140.91', category: 'lantanido' },
+                Nd: { number: 60, name: 'Neodimio', mass: '144.24',  category: 'lantanido' },
+                Pm: { number: 61, name: 'Promecio', mass: '(145)',   category: 'lantanido' },
+                Sm: { number: 62, name: 'Samario',  mass: '150.36',  category: 'lantanido' },
+                Eu: { number: 63, name: 'Europio',  mass: '151.96',  category: 'lantanido' },
+                Gd: { number: 64, name: 'Gadolinio',mass: '157.25',  category: 'lantanido' },
+                Tb: { number: 65, name: 'Terbio',   mass: '158.93',  category: 'lantanido' },
+                Dy: { number: 66, name: 'Disprosio',mass: '162.50',  category: 'lantanido' },
+                Ho: { number: 67, name: 'Holmio',   mass: '164.93',  category: 'lantanido' },
+                Er: { number: 68, name: 'Erbio',    mass: '167.26',  category: 'lantanido' },
+                Tm: { number: 69, name: 'Tulio',    mass: '168.93',  category: 'lantanido' },
+                Yb: { number: 70, name: 'Iterbio',  mass: '173.05',  category: 'lantanido' },
+                Lu: { number: 71, name: 'Lutecio',  mass: '174.97',  category: 'lantanido' },
+                Hf: { number: 72, name: 'Hafnio',   mass: '178.49',  category: 'metal-de-transicion' },
+                Ta: { number: 73, name: 'Tantalio', mass: '180.95',  category: 'metal-de-transicion' },
+                W:  { number: 74, name: 'Wolframio',mass:'183.84',   category: 'metal-de-transicion' },
+                Re: { number: 75, name: 'Renio',    mass: '186.21',  category: 'metal-de-transicion' },
+                Os: { number: 76, name: 'Osmio',    mass: '190.23',  category: 'metal-de-transicion' },
+                Ir: { number: 77, name: 'Iridio',   mass: '192.22',  category: 'metal-de-transicion' },
+                Pt: { number: 78, name: 'Platino',  mass: '195.08',  category: 'metal-de-transicion' },
+                Au: { number: 79, name: 'Oro',      mass: '196.97',  category: 'metal-de-transicion' },
+                Hg: { number: 80, name: 'Mercurio', mass: '200.59',  category: 'metal-de-transicion' },
+                Tl: { number: 81, name: 'Talio',    mass: '204.38',  category: 'metal-posttransicional' },
+                Pb: { number: 82, name: 'Plomo',    mass: '207.2',   category: 'metal-posttransicional' },
+                Bi: { number: 83, name: 'Bismuto',  mass: '208.98',  category: 'metal-posttransicional' },
+                Po: { number: 84, name: 'Polonio',  mass: '(209)',   category: 'metaloide' },
+                At: { number: 85, name: 'Astato',   mass: '(210)',   category: 'halógeno' },
+                Rn: { number: 86, name: 'Radón',    mass: '(222)',   category: 'gas-noble' },
+                Fr: { number: 87, name: 'Francio',  mass: '(223)',   category: 'metal-alcalino' },
+                Ra: { number: 88, name: 'Radio',    mass: '(226)',   category: 'metal-alcalinoterreo' },
+                Ac: { number: 89, name: 'Actinio',  mass: '(227)',   category: 'actinido' },
+                Th: { number: 90, name: 'Torio',    mass: '232.04',  category: 'actinido' },
+                Pa: { number: 91, name: 'Protactinio', mass: '231.04', category: 'actinido' },
+                U:  { number: 92, name: 'Uranio',   mass: '238.03',  category: 'actinido' },
+                Np: { number: 93, name: 'Neptunio', mass: '(237)',   category: 'actinido' },
+                Pu: { number: 94, name: 'Plutonio', mass: '(244)',   category: 'actinido' },
+                Am: { number: 95, name: 'Americio', mass: '(243)',   category: 'actinido' },
+                Cm: { number: 96, name: 'Curio',    mass: '(247)',   category: 'actinido' },
+                Bk: { number: 97, name: 'Berkelio', mass: '(247)',   category: 'actinido' },
+                Cf: { number: 98, name: 'Californio', mass: '(251)', category: 'actinido' },
+                Es: { number: 99, name: 'Einstenio', mass: '(252)',  category: 'actinido' },
+                Fm: { number: 100,name: 'Fermio',   mass: '(257)',   category: 'actinido' },
+                Md: { number: 101,name: 'Mendelevio',mass: '(258)',  category: 'actinido' },
+                No: { number: 102,name: 'Nobelio',  mass: '(259)',   category: 'actinido' },
+                Lr: { number: 103,name: 'Lawrencio', mass: '(262)', category: 'actinido' },
+                Rf: { number: 104,name: 'Rutherfordio', mass: '(267)', category: 'metal-de-transicion' },
+                Db: { number: 105,name: 'Dubnio',   mass: '(270)',   category: 'metal-de-transicion' },
+                Sg: { number: 106,name: 'Seaborgio', mass: '(271)',  category: 'metal-de-transicion' },
+                Bh: { number: 107,name: 'Bohrio',   mass: '(270)',   category: 'metal-de-transicion' },
+                Hs: { number: 108,name: 'Hassio',   mass: '(269)',   category: 'metal-de-transicion' },
+                Mt: { number: 109,name: 'Meitnerio', mass: '(278)',  category: 'metal-de-transicion' },
+                Ds: { number: 110,name: 'Darmstadtio', mass: '(281)', category: 'metal-de-transicion' },
+                Rg: { number: 111,name: 'Roentgenio', mass: '(282)', category: 'metal-de-transicion' },
+                Cn: { number: 112,name: 'Copernicio', mass: '(285)', category: 'metal-de-transicion' },
+                Nh: { number: 113,name: 'Nihonio',  mass: '(286)',   category: 'metal-posttransicional' },
+                Fl: { number: 114,name: 'Flerovio', mass: '(289)',   category: 'metal-posttransicional' },
+                Mc: { number: 115,name: 'Moscovio', mass: '(290)',   category: 'metal-posttransicional' },
+                Lv: { number: 116,name: 'Livermorio', mass: '(293)', category: 'metal-posttransicional' },
+                Ts: { number: 117,name: 'Tenesino', mass: '(294)',   category: 'halógeno' },
+                Og: { number: 118,name: 'Oganesón', mass: '(294)',   category: 'gas-noble' }
+            };
+
+            const gridLayout = [
+                ['H', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 'He'],
+                ['Li','Be',null,null,null,null,null,null,null,null,null,null,'B','C','N','O','F','Ne'],
+                ['Na','Mg',null,null,null,null,null,null,null,null,null,null,'Al','Si','P','S','Cl','Ar'],
+                ['K','Ca','Sc','Ti','V','Cr','Mn','Fe','Co','Ni','Cu','Zn','Ga','Ge','As','Se','Br','Kr'],
+                ['Rb','Sr','Y','Zr','Nb','Mo','Tc','Ru','Rh','Pd','Ag','Cd','In','Sn','Sb','Te','I','Xe'],
+                ['Cs','Ba',null,'Hf','Ta','W','Re','Os','Ir','Pt','Au','Hg','Tl','Pb','Bi','Po','At','Rn'],
+                ['Fr','Ra',null,'Rf','Db','Sg','Bh','Hs','Mt','Ds','Rg','Cn','Nh','Fl','Mc','Lv','Ts','Og'],
+                [null,null,'La','Ce','Pr','Nd','Pm','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu',null],
+                [null,null,'Ac','Th','Pa','U','Np','Pu','Am','Cm','Bk','Cf','Es','Fm','Md','No','Lr',null]
+            ];
+
+            const tabla = document.getElementById('tabla');
+            const popup = document.getElementById('elemento-popup');
+            let popupOpen = false;
+
+            gridLayout.forEach((fila, rIndex) => {
+                fila.forEach((simbolo, cIndex) => {
+                    if (!simbolo) return;
+                    const info = elementos[simbolo];
+                    const celda = document.createElement('div');
+                    celda.classList.add('elemento');
+                    celda.classList.add(info.category);
+                    celda.style.gridRowStart = rIndex + 1;
+                    celda.style.gridColumnStart = cIndex + 1;
+                    celda.innerHTML = `
+                        <div class='numero'>${info.number}</div>
+                        <div class='simbolo'>${simbolo}</div>
+                        <div class='nombre'>${info.name}</div>
+                        <div class='masa'>${info.mass}</div>
+                    `;
+                    celda.dataset.category = info.category;
+                    celda.dataset.simbolo = simbolo;
+
+                    celda.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        // If same cell clicked again, close
+                        if (celda.classList.contains('selected')) {
+                            closePopup();
+                            return;
+                        }
+                        openPopup(celda, simbolo, info, e);
+                    });
+
+                    tabla.appendChild(celda);
+                });
+            });
+
+            function openPopup(celda, simbolo, info, e) {
+                // Dim table, highlight cell
+                tabla.classList.add('dimmed');
+                document.querySelectorAll('.elemento.selected').forEach(el => el.classList.remove('selected'));
+                celda.classList.add('selected');
+
+                // Fill popup
+                document.getElementById('popup-numero').textContent = 'Número atómico: ' + info.number;
+                document.getElementById('popup-simbolo').textContent = simbolo;
+                document.getElementById('popup-nombre').textContent = info.name;
+                document.getElementById('popup-masa').textContent = info.mass;
+
+                // Position popup near cell
+                const rect = celda.getBoundingClientRect();
+                popup.classList.add('visible');
+                const pw = popup.offsetWidth || 200;
+                const ph = popup.offsetHeight || 160;
+                let left = rect.right + 10;
+                let top = rect.top;
+                if (left + pw > window.innerWidth - 10) left = rect.left - pw - 10;
+                if (top + ph > window.innerHeight - 10) top = window.innerHeight - ph - 10;
+                if (top < 8) top = 8;
+                popup.style.left = left + 'px';
+                popup.style.top = top + 'px';
+                popupOpen = true;
+            }
+
+            function closePopup() {
+                tabla.classList.remove('dimmed');
+                document.querySelectorAll('.elemento.selected').forEach(el => el.classList.remove('selected'));
+                popup.classList.remove('visible');
+                popupOpen = false;
+            }
+
+            // Close on click outside
+            document.addEventListener('click', (e) => {
+                if (popupOpen && !popup.contains(e.target)) {
+                    closePopup();
+                }
+            });
+
+            function bindControls() {
+                document.querySelectorAll('.controles button').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const filter = button.dataset.filter;
+                        document.querySelectorAll('.elemento').forEach(el => {
+                            if (filter === 'all') {
+                                el.style.opacity = '1';
+                                el.style.transform = 'scale(1)';
+                            } else {
+                                const matched = el.dataset.category === filter;
+                                el.style.opacity = matched ? '1' : '0.25';
+                                el.style.transform = matched ? 'scale(1.04)' : 'scale(1)';
+                            }
+                        });
+                    });
+                });
+            }
+
+            const groups = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18'];
+            const gruposCont = document.getElementById('grupos');
+            groups.forEach(g => {
+                const label = document.createElement('span');
+                label.className = 'group-label';
+                label.textContent = g;
+                gruposCont.appendChild(label);
+            });
+
+            // Modo Oscuro
+            const btnDark = document.getElementById('btn-dark');
+            btnDark.addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                btnDark.textContent = document.body.classList.contains('dark') ? 'Modo Claro' : 'Modo Oscuro';
+                sessionStorage.setItem('darkMode', document.body.classList.contains('dark') ? '1' : '0');
+            });
+            if (sessionStorage.getItem('darkMode') === '1') {
+                document.body.classList.add('dark');
+                btnDark.textContent = 'Modo Claro';
+            }
+
+            bindControls();
+        </script>
+    </body>
+</html>

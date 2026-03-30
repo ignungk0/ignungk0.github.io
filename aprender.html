@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="periodica.css">
+    <link rel="stylesheet" href="aprender.css">
+    <title>Aprender – Tabla Periódica</title>
+</head>
+<body>
+<div class="aprender-wrapper">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar-aprender">
+        <button class="btn-aprender-mini" onclick="window.location.href='tabla.html'">← Volver</button>
+        <div class="sidebar-bottom-btns">
+            <button class="btn-modo active" id="btn-numero" onclick="seleccionarModo('numero')">Por Número Atómico</button>
+            <button class="btn-modo" id="btn-nombre" onclick="seleccionarModo('nombre')">Por Nombre</button>
+            <button class="btn-modo" id="btn-signo" onclick="seleccionarModo('signo')">Por Signo</button>
+            <button class="btn-modo examen-btn" id="btn-examen" onclick="seleccionarModo('examen')" style="display:none;">📝 Examen</button>
+        </div>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="contenido-aprender">
+
+        <!-- P1: Inicio - Cantidad vs Personalizado -->
+        <div class="pantalla activa" id="p-inicio">
+            <h2 id="titulo-inicio">Aprender por Número Atómico</h2>
+            <div class="mini-card">
+                <button class="btn-opcion" onclick="irA('p-cantidad')">Cantidad</button>
+                <button class="btn-opcion" onclick="irPersonalizado()">Personalizado</button>
+            </div>
+        </div>
+
+        <!-- P2: Cantidad -->
+        <div class="pantalla" id="p-cantidad">
+            <h2 id="titulo-cantidad">¿Cuántos elementos?</h2>
+            <div class="mini-card">
+                <input class="input-numero" type="number" id="input-cantidad" min="1" max="118" placeholder="Número del 1 al 118">
+                <span class="hint">Deja vacío para usar todos</span>
+                <button class="btn-opcion" onclick="lanzarAleatorio('input-cantidad', null)">Aleatorio</button>
+                <button class="btn-opcion" onclick="irA('p-por-clase-cantidad')">Por Clase</button>
+            </div>
+        </div>
+
+        <!-- P3: Por Clase (desde Cantidad) -->
+        <div class="pantalla" id="p-por-clase-cantidad">
+            <h2>Elige una clase</h2>
+            <div class="mini-card">
+                <div class="grid-clases" id="gc-cantidad"></div>
+                <input class="input-numero" type="number" id="input-cant-clase" min="1" placeholder="Cantidad (opcional)">
+                <span class="hint">Deja vacío para usar todos los de la clase</span>
+                <button class="btn-confirmar" onclick="lanzarPorClase('gc-cantidad','input-cant-clase')">Comenzar →</button>
+            </div>
+        </div>
+
+        <!-- P4: Personalizado - sub-opciones según modo -->
+        <div class="pantalla" id="p-personalizado">
+            <h2 id="titulo-pers">Personalizado</h2>
+            <div class="mini-card" id="card-pers">
+                <!-- filled dynamically -->
+            </div>
+        </div>
+
+        <!-- P5: Personalizado → Por Clase -->
+        <div class="pantalla" id="p-pers-clase">
+            <h2>Elige una clase</h2>
+            <div class="mini-card">
+                <div class="grid-clases" id="gc-pers"></div>
+                <input class="input-numero" type="number" id="input-pers-cant" min="1" placeholder="Cantidad (opcional)">
+                <span class="hint">Deja vacío para todos de la clase</span>
+                <button class="btn-confirmar" onclick="lanzarPorClase('gc-pers','input-pers-cant')">Comenzar →</button>
+            </div>
+        </div>
+
+        <!-- P6: Tarjetas estudio -->
+        <div class="pantalla" id="p-tarjetas">
+            <h2 id="titulo-tarjetas">Estudia las tarjetas</h2>
+            <p style="font-size:0.80rem;color:#888;margin:0 0 8px;">Haz clic en cada tarjeta para voltearla</p>
+            <div class="tarjetas-container" id="tarjetas-container"></div>
+            <button class="btn-listo" onclick="empezarQuiz(false)">¿Listo? →</button>
+        </div>
+
+        <!-- P7: Quiz / Examen -->
+        <div class="pantalla" id="p-quiz">
+            <div class="quiz-wrapper">
+                <div class="quiz-progreso" id="quiz-progreso"></div>
+                <div class="quiz-card">
+                    <div class="quiz-pregunta" id="quiz-pregunta"></div>
+                    <div class="quiz-elemento-grande" id="quiz-elemento-grande"></div>
+                    <div class="quiz-sub" id="quiz-sub"></div>
+                    <input class="quiz-input" type="text" id="quiz-input" placeholder="Tu respuesta..."
+                        onkeydown="if(event.key==='Enter') verificarRespuesta()">
+                    <div class="quiz-feedback" id="quiz-feedback"></div>
+                    <button class="btn-siguiente" onclick="verificarRespuesta()">Confirmar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- P8: Advertencia examen -->
+        <div class="pantalla" id="p-examen-config">
+            <h2 id="titulo-examen-config">Examen</h2>
+            <div class="mini-card">
+                <div id="examen-sub-opciones">
+                    <!-- filled dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- P9: Warning examen -->
+        <div class="pantalla" id="p-examen-warning">
+            <div class="warning-card">
+                <div class="warning-icon">⚠️</div>
+                <div class="warning-title">Atención</div>
+                <div class="warning-text">El examen consta de <strong>27 preguntas</strong> seleccionadas de los elementos que hayas elegido. No se muestran tarjetas — vas directo al test.<br><br>¿Estás listo?</div>
+                <button class="btn-empezar-examen" onclick="iniciarExamen()">Comenzar examen →</button>
+                <button class="btn-opcion" style="margin-top:4px;" onclick="irA('p-examen-config')">← Volver</button>
+            </div>
+        </div>
+
+        <!-- P10: Resultados -->
+        <div class="pantalla" id="p-resultados">
+            <div class="resultados-wrapper">
+                <div class="resultado-score" id="resultado-score"></div>
+                <div class="resultado-sub" id="resultado-sub"></div>
+                <div class="resultado-barras">
+                    <div class="barra-grupo">
+                        <div class="barra-pct verde" id="pct-bien"></div>
+                        <div class="barra-label">✅ Aciertos</div>
+                    </div>
+                    <div class="barra-grupo">
+                        <div class="barra-pct roja" id="pct-mal"></div>
+                        <div class="barra-label">❌ Fallos</div>
+                    </div>
+                </div>
+                <button class="btn-ver-detalle" onclick="toggleDetalle()">Ver detalle</button>
+                <div class="lista-detalle" id="lista-detalle" style="display:none;"></div>
+                <button class="btn-avanzar" onclick="window.location.href='tabla.html'">Avanzar →</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ========== DATOS ==========
+const elementos = {
+    H:{number:1,name:'Hidrógeno',mass:'1.008',category:'no-metal'},
+    He:{number:2,name:'Helio',mass:'4.0026',category:'gas-noble'},
+    Li:{number:3,name:'Litio',mass:'6.94',category:'metal-alcalino'},
+    Be:{number:4,name:'Berilio',mass:'9.0122',category:'metal-alcalinoterreo'},
+    B:{number:5,name:'Boro',mass:'10.81',category:'metaloide'},
+    C:{number:6,name:'Carbono',mass:'12.011',category:'no-metal'},
+    N:{number:7,name:'Nitrógeno',mass:'14.007',category:'no-metal'},
+    O:{number:8,name:'Oxígeno',mass:'15.999',category:'no-metal'},
+    F:{number:9,name:'Flúor',mass:'18.998',category:'halógeno'},
+    Ne:{number:10,name:'Neón',mass:'20.180',category:'gas-noble'},
+    Na:{number:11,name:'Sodio',mass:'22.990',category:'metal-alcalino'},
+    Mg:{number:12,name:'Magnesio',mass:'24.305',category:'metal-alcalinoterreo'},
+    Al:{number:13,name:'Aluminio',mass:'26.982',category:'metal-posttransicional'},
+    Si:{number:14,name:'Silicio',mass:'28.085',category:'metaloide'},
+    P:{number:15,name:'Fósforo',mass:'30.974',category:'no-metal'},
+    S:{number:16,name:'Azufre',mass:'32.06',category:'no-metal'},
+    Cl:{number:17,name:'Cloro',mass:'35.45',category:'halógeno'},
+    Ar:{number:18,name:'Argón',mass:'39.948',category:'gas-noble'},
+    K:{number:19,name:'Potasio',mass:'39.098',category:'metal-alcalino'},
+    Ca:{number:20,name:'Calcio',mass:'40.078',category:'metal-alcalinoterreo'},
+    Sc:{number:21,name:'Escandio',mass:'44.956',category:'metal-de-transicion'},
+    Ti:{number:22,name:'Titanio',mass:'47.867',category:'metal-de-transicion'},
+    V:{number:23,name:'Vanadio',mass:'50.942',category:'metal-de-transicion'},
+    Cr:{number:24,name:'Cromo',mass:'51.996',category:'metal-de-transicion'},
+    Mn:{number:25,name:'Manganeso',mass:'54.938',category:'metal-de-transicion'},
+    Fe:{number:26,name:'Hierro',mass:'55.845',category:'metal-de-transicion'},
+    Co:{number:27,name:'Cobalto',mass:'58.933',category:'metal-de-transicion'},
+    Ni:{number:28,name:'Níquel',mass:'58.693',category:'metal-de-transicion'},
+    Cu:{number:29,name:'Cobre',mass:'63.546',category:'metal-de-transicion'},
+    Zn:{number:30,name:'Zinc',mass:'65.38',category:'metal-de-transicion'},
+    Ga:{number:31,name:'Galio',mass:'69.723',category:'metal-posttransicional'},
+    Ge:{number:32,name:'Germanio',mass:'72.630',category:'metaloide'},
+    As:{number:33,name:'Arsénico',mass:'74.922',category:'metaloide'},
+    Se:{number:34,name:'Selenio',mass:'78.971',category:'no-metal'},
+    Br:{number:35,name:'Bromo',mass:'79.904',category:'halógeno'},
+    Kr:{number:36,name:'Kriptón',mass:'83.798',category:'gas-noble'},
+    Rb:{number:37,name:'Rubidio',mass:'85.468',category:'metal-alcalino'},
+    Sr:{number:38,name:'Estroncio',mass:'87.62',category:'metal-alcalinoterreo'},
+    Y:{number:39,name:'Itrio',mass:'88.906',category:'metal-de-transicion'},
+    Zr:{number:40,name:'Circonio',mass:'91.224',category:'metal-de-transicion'},
+    Nb:{number:41,name:'Niobio',mass:'92.906',category:'metal-de-transicion'},
+    Mo:{number:42,name:'Molibdeno',mass:'95.95',category:'metal-de-transicion'},
+    Tc:{number:43,name:'Tecnecio',mass:'(98)',category:'metal-de-transicion'},
+    Ru:{number:44,name:'Rutenio',mass:'101.07',category:'metal-de-transicion'},
+    Rh:{number:45,name:'Rodio',mass:'102.91',category:'metal-de-transicion'},
+    Pd:{number:46,name:'Paladio',mass:'106.42',category:'metal-de-transicion'},
+    Ag:{number:47,name:'Plata',mass:'107.87',category:'metal-de-transicion'},
+    Cd:{number:48,name:'Cadmio',mass:'112.41',category:'metal-de-transicion'},
+    In:{number:49,name:'Indio',mass:'114.82',category:'metal-posttransicional'},
+    Sn:{number:50,name:'Estaño',mass:'118.71',category:'metal-posttransicional'},
+    Sb:{number:51,name:'Antimonio',mass:'121.76',category:'metaloide'},
+    Te:{number:52,name:'Telurio',mass:'127.60',category:'metaloide'},
+    I:{number:53,name:'Yodo',mass:'126.90',category:'halógeno'},
+    Xe:{number:54,name:'Xenón',mass:'131.29',category:'gas-noble'},
+    Cs:{number:55,name:'Cesio',mass:'132.91',category:'metal-alcalino'},
+    Ba:{number:56,name:'Bario',mass:'137.33',category:'metal-alcalinoterreo'},
+    La:{number:57,name:'Lantano',mass:'138.91',category:'lantanido'},
+    Ce:{number:58,name:'Cerio',mass:'140.12',category:'lantanido'},
+    Pr:{number:59,name:'Praseodimio',mass:'140.91',category:'lantanido'},
+    Nd:{number:60,name:'Neodimio',mass:'144.24',category:'lantanido'},
+    Pm:{number:61,name:'Promecio',mass:'(145)',category:'lantanido'},
+    Sm:{number:62,name:'Samario',mass:'150.36',category:'lantanido'},
+    Eu:{number:63,name:'Europio',mass:'151.96',category:'lantanido'},
+    Gd:{number:64,name:'Gadolinio',mass:'157.25',category:'lantanido'},
+    Tb:{number:65,name:'Terbio',mass:'158.93',category:'lantanido'},
+    Dy:{number:66,name:'Disprosio',mass:'162.50',category:'lantanido'},
+    Ho:{number:67,name:'Holmio',mass:'164.93',category:'lantanido'},
+    Er:{number:68,name:'Erbio',mass:'167.26',category:'lantanido'},
+    Tm:{number:69,name:'Tulio',mass:'168.93',category:'lantanido'},
+    Yb:{number:70,name:'Iterbio',mass:'173.05',category:'lantanido'},
+    Lu:{number:71,name:'Lutecio',mass:'174.97',category:'lantanido'},
+    Hf:{number:72,name:'Hafnio',mass:'178.49',category:'metal-de-transicion'},
+    Ta:{number:73,name:'Tantalio',mass:'180.95',category:'metal-de-transicion'},
+    W:{number:74,name:'Wolframio',mass:'183.84',category:'metal-de-transicion'},
+    Re:{number:75,name:'Renio',mass:'186.21',category:'metal-de-transicion'},
+    Os:{number:76,name:'Osmio',mass:'190.23',category:'metal-de-transicion'},
+    Ir:{number:77,name:'Iridio',mass:'192.22',category:'metal-de-transicion'},
+    Pt:{number:78,name:'Platino',mass:'195.08',category:'metal-de-transicion'},
+    Au:{number:79,name:'Oro',mass:'196.97',category:'metal-de-transicion'},
+    Hg:{number:80,name:'Mercurio',mass:'200.59',category:'metal-de-transicion'},
+    Tl:{number:81,name:'Talio',mass:'204.38',category:'metal-posttransicional'},
+    Pb:{number:82,name:'Plomo',mass:'207.2',category:'metal-posttransicional'},
+    Bi:{number:83,name:'Bismuto',mass:'208.98',category:'metal-posttransicional'},
+    Po:{number:84,name:'Polonio',mass:'(209)',category:'metaloide'},
+    At:{number:85,name:'Astato',mass:'(210)',category:'halógeno'},
+    Rn:{number:86,name:'Radón',mass:'(222)',category:'gas-noble'},
+    Fr:{number:87,name:'Francio',mass:'(223)',category:'metal-alcalino'},
+    Ra:{number:88,name:'Radio',mass:'(226)',category:'metal-alcalinoterreo'},
+    Ac:{number:89,name:'Actinio',mass:'(227)',category:'actinido'},
+    Th:{number:90,name:'Torio',mass:'232.04',category:'actinido'},
+    Pa:{number:91,name:'Protactinio',mass:'231.04',category:'actinido'},
+    U:{number:92,name:'Uranio',mass:'238.03',category:'actinido'},
+    Np:{number:93,name:'Neptunio',mass:'(237)',category:'actinido'},
+    Pu:{number:94,name:'Plutonio',mass:'(244)',category:'actinido'},
+    Am:{number:95,name:'Americio',mass:'(243)',category:'actinido'},
+    Cm:{number:96,name:'Curio',mass:'(247)',category:'actinido'},
+    Bk:{number:97,name:'Berkelio',mass:'(247)',category:'actinido'},
+    Cf:{number:98,name:'Californio',mass:'(251)',category:'actinido'},
+    Es:{number:99,name:'Einstenio',mass:'(252)',category:'actinido'},
+    Fm:{number:100,name:'Fermio',mass:'(257)',category:'actinido'},
+    Md:{number:101,name:'Mendelevio',mass:'(258)',category:'actinido'},
+    No:{number:102,name:'Nobelio',mass:'(259)',category:'actinido'},
+    Lr:{number:103,name:'Lawrencio',mass:'(262)',category:'actinido'},
+    Rf:{number:104,name:'Rutherfordio',mass:'(267)',category:'metal-de-transicion'},
+    Db:{number:105,name:'Dubnio',mass:'(270)',category:'metal-de-transicion'},
+    Sg:{number:106,name:'Seaborgio',mass:'(271)',category:'metal-de-transicion'},
+    Bh:{number:107,name:'Bohrio',mass:'(270)',category:'metal-de-transicion'},
+    Hs:{number:108,name:'Hassio',mass:'(269)',category:'metal-de-transicion'},
+    Mt:{number:109,name:'Meitnerio',mass:'(278)',category:'metal-de-transicion'},
+    Ds:{number:110,name:'Darmstadtio',mass:'(281)',category:'metal-de-transicion'},
+    Rg:{number:111,name:'Roentgenio',mass:'(282)',category:'metal-de-transicion'},
+    Cn:{number:112,name:'Copernicio',mass:'(285)',category:'metal-de-transicion'},
+    Nh:{number:113,name:'Nihonio',mass:'(286)',category:'metal-posttransicional'},
+    Fl:{number:114,name:'Flerovio',mass:'(289)',category:'metal-posttransicional'},
+    Mc:{number:115,name:'Moscovio',mass:'(290)',category:'metal-posttransicional'},
+    Lv:{number:116,name:'Livermorio',mass:'(293)',category:'metal-posttransicional'},
+    Ts:{number:117,name:'Tenesino',mass:'(294)',category:'halógeno'},
+    Og:{number:118,name:'Oganesón',mass:'(294)',category:'gas-noble'}
+};
+
+const clases = [
+    {key:'metal-alcalino',label:'Alcalinos'},
+    {key:'metal-alcalinoterreo',label:'Alcalinotérreos'},
+    {key:'metal-de-transicion',label:'Transición'},
+    {key:'metal-posttransicional',label:'Posttransicional'},
+    {key:'metaloide',label:'Metaloides'},
+    {key:'no-metal',label:'No metales'},
+    {key:'halógeno',label:'Halógenos'},
+    {key:'gas-noble',label:'Gases nobles'},
+];
+
+const todosSimbolos = Object.keys(elementos);
+
+// ========== ESTADO ==========
+let modoActual = 'numero';        // 'numero' | 'nombre' | 'signo' | 'examen'
+let subModo = null;               // 'con-nombre' | 'con-signo' | 'con-numero' (para personalizado)
+let elementosSeleccionados = [];
+let quizPreguntas = [];
+let quizIndex = 0;
+let quizResultados = [];
+let esExamen = false;
+let sessionCompleted = parseInt(sessionStorage.getItem('sesionesCompletadas') || '0');
+
+// ========== DARK MODE ==========
+if (sessionStorage.getItem('darkMode') === '1') document.body.classList.add('dark');
+
+// ========== UTILIDADES ==========
+function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length-1; i>0; i--) {
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a;
+}
+
+function irA(id) {
+    document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+    document.getElementById(id).classList.add('activa');
+}
+
+function buildGrid(containerId, onSelect) {
+    const cont = document.getElementById(containerId);
+    cont.innerHTML = '';
+    clases.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-clase';
+        btn.textContent = c.label;
+        btn.dataset.key = c.key;
+        btn.addEventListener('click', () => {
+            cont.querySelectorAll('.btn-clase').forEach(b => b.classList.remove('seleccionada'));
+            btn.classList.add('seleccionada');
+            if (onSelect) onSelect(c.key);
+        });
+        cont.appendChild(btn);
+    });
+}
+
+buildGrid('gc-cantidad');
+buildGrid('gc-pers');
+
+// ========== MODO SELECCIÓN ==========
+const titulosModo = {
+    numero: 'Aprender por Número Atómico',
+    nombre: 'Aprender por Nombre',
+    signo:  'Aprender por Signo',
+    examen: 'Examen'
+};
+
+function seleccionarModo(modo) {
+    modoActual = modo;
+    subModo = null;
+    document.querySelectorAll('.btn-modo').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + modo).classList.add('active');
+
+    if (modo === 'examen') {
+        mostrarExamenConfig();
+        return;
+    }
+
+    document.getElementById('titulo-inicio').textContent = titulosModo[modo];
+    irA('p-inicio');
+}
+
+// ========== PERSONALIZADO ==========
+function irPersonalizado() {
+    const card = document.getElementById('card-pers');
+    card.innerHTML = '';
+    subModo = null;
+
+    // Por Número Atómico: sub-opciones son Con Nombre y Con Signo
+    // Por Nombre: sub-opciones son Con Signo y Con Número Atómico
+    // Por Signo: sub-opciones son Con Nombre y Con Número Atómico
+    let opciones = [];
+    if (modoActual === 'numero') {
+        document.getElementById('titulo-pers').textContent = 'Personalizado – Por Número Atómico';
+        opciones = [{key:'con-nombre',label:'Con Nombre'},{key:'con-signo',label:'Con Signo'}];
+    } else if (modoActual === 'nombre') {
+        document.getElementById('titulo-pers').textContent = 'Personalizado – Por Nombre';
+        opciones = [{key:'con-signo',label:'Con Signo'},{key:'con-numero',label:'Con Número Atómico'}];
+    } else if (modoActual === 'signo') {
+        document.getElementById('titulo-pers').textContent = 'Personalizado – Por Signo';
+        opciones = [{key:'con-nombre',label:'Con Nombre'},{key:'con-numero',label:'Con Número Atómico'}];
+    }
+
+    // Step 1: show sub-mode buttons
+    const paso1 = document.createElement('div');
+    paso1.style.cssText = 'display:flex;flex-direction:column;gap:12px;width:100%;';
+
+    const label = document.createElement('div');
+    label.style.cssText = 'font-size:0.82rem;color:#888;text-align:center;margin-bottom:4px;';
+    label.textContent = 'Elige el tipo de respuesta:';
+    paso1.appendChild(label);
+
+    const paso2 = document.createElement('div');
+    paso2.style.cssText = 'display:none;flex-direction:column;gap:12px;width:100%;margin-top:8px;';
+    paso2.innerHTML = `
+        <button class="btn-opcion" onclick="lanzarAleatorio('input-pers-cantidad', null)">Aleatorio</button>
+        <button class="btn-opcion" onclick="irA('p-pers-clase')">Por Clase</button>
+        <input class="input-numero" type="number" id="input-pers-cantidad" min="1" max="118" placeholder="Cantidad (opcional)">
+        <span class="hint">Deja vacío para todos</span>
+    `;
+
+    opciones.forEach(op => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-opcion';
+        btn.textContent = op.label;
+        btn.addEventListener('click', () => {
+            subModo = op.key;
+            paso2.style.display = 'flex';
+            paso1.querySelectorAll('.btn-opcion').forEach(b => {
+                b.style.background = '';
+                b.style.color = '';
+            });
+            btn.style.background = '#4287f5';
+            btn.style.color = 'white';
+        });
+        paso1.appendChild(btn);
+    });
+
+    card.appendChild(paso1);
+    card.appendChild(paso2);
+    irA('p-personalizado');
+}
+
+// ========== LANZAR CON CANTIDAD ==========
+let _pendingClaseGridId = null;
+let _pendingClaseCantId = null;
+
+function lanzarAleatorio(cantInputId, claveClase) {
+    const n = parseInt(document.getElementById(cantInputId)?.value) || null;
+    const pool = claveClase
+        ? todosSimbolos.filter(s => elementos[s].category === claveClase)
+        : todosSimbolos;
+    elementosSeleccionados = n ? shuffle(pool).slice(0, Math.min(n, pool.length)) : shuffle(pool);
+    mostrarTarjetas();
+}
+
+function lanzarPorClase(gridId, cantInputId) {
+    const sel = document.querySelector(`#${gridId} .btn-clase.seleccionada`);
+    if (!sel) { alert('Elige una clase primero'); return; }
+    const clave = sel.dataset.key;
+    const n = parseInt(document.getElementById(cantInputId)?.value) || null;
+    const pool = todosSimbolos.filter(s => elementos[s].category === clave);
+    elementosSeleccionados = n ? shuffle(pool).slice(0, Math.min(n, pool.length)) : shuffle(pool);
+    mostrarTarjetas();
+}
+
+// ========== TARJETAS ==========
+function mostrarTarjetas() {
+    const cont = document.getElementById('tarjetas-container');
+    cont.innerHTML = '';
+    document.getElementById('titulo-tarjetas').textContent = `Estudia las tarjetas (${elementosSeleccionados.length})`;
+
+    elementosSeleccionados.forEach(sim => {
+        const info = elementos[sim];
+        const card = document.createElement('div');
+        card.className = 'flashcard';
+
+        // Back content depends on mode
+        let backContent = '';
+        if (modoActual === 'numero') {
+            backContent = `<div class="label-back">Número atómico</div><div class="numero-grande">${info.number}</div><div class="label-back">${sim}</div>`;
+        } else if (modoActual === 'nombre') {
+            backContent = `<div class="label-back">Nombre</div><div class="numero-grande" style="font-size:1rem">${info.name}</div><div class="label-back">Nº ${info.number}</div>`;
+        } else {
+            backContent = `<div class="label-back">Símbolo</div><div class="numero-grande">${sim}</div><div class="label-back">${info.name}</div>`;
+        }
+
+        card.innerHTML = `
+            <div class="flashcard-inner">
+                <div class="flashcard-front ${info.category}">
+                    <div class="fc-numero">${info.number}</div>
+                    <div class="fc-simbolo">${sim}</div>
+                    <div class="fc-nombre">${info.name}</div>
+                    <div class="fc-masa">${info.mass}</div>
+                </div>
+                <div class="flashcard-back">${backContent}</div>
+            </div>`;
+        card.addEventListener('click', () => card.classList.toggle('flipped'));
+        cont.appendChild(card);
+    });
+    irA('p-tarjetas');
+}
+
+// ========== QUIZ ==========
+function empezarQuiz(esExamenFlag) {
+    esExamen = esExamenFlag;
+    quizResultados = [];
+    quizIndex = 0;
+
+    const pool = shuffle(elementosSeleccionados);
+    const total = esExamen ? 27 : pool.length;
+    const sims = esExamen ? shuffle(pool).slice(0, Math.min(27, pool.length)) : pool;
+
+    quizPreguntas = sims.map(sim => generarPregunta(sim));
+    irA('p-quiz');
+    mostrarPregunta();
+}
+
+function generarPregunta(sim) {
+    const info = elementos[sim];
+    // Determine question types based on mode + subMode
+    // tipo: 'numero-a-nombre' | 'numero-a-signo' | 'signo-a-numero' | 'nombre-a-numero' | 'numero-a-ambos' | 'signo-a-nombre' | 'nombre-a-signo'
+    let tipo;
+
+    if (modoActual === 'examen') {
+        // Mixed: all question types randomly
+        const tipos = ['numero-a-signo','numero-a-nombre','signo-a-numero','nombre-a-numero','signo-a-nombre','nombre-a-signo'];
+        tipo = tipos[Math.floor(Math.random()*tipos.length)];
+    } else if (modoActual === 'numero') {
+        if (!subModo || subModo === 'con-nombre') {
+            tipo = Math.random() < 0.5 ? 'signo-a-numero' : 'numero-a-nombre';
+        } else { // con-signo
+            tipo = Math.random() < 0.5 ? 'nombre-a-numero' : 'numero-a-signo';
+        }
+    } else if (modoActual === 'nombre') {
+        if (!subModo || subModo === 'con-signo') {
+            tipo = Math.random() < 0.5 ? 'numero-a-nombre' : 'nombre-a-signo';
+        } else { // con-numero
+            tipo = Math.random() < 0.5 ? 'signo-a-nombre' : 'nombre-a-numero';
+        }
+    } else { // signo
+        if (!subModo || subModo === 'con-nombre') {
+            tipo = Math.random() < 0.5 ? 'numero-a-signo' : 'signo-a-nombre';
+        } else { // con-numero
+            tipo = Math.random() < 0.5 ? 'nombre-a-signo' : 'signo-a-numero';
+        }
+    }
+    return { sim, tipo };
+}
+
+function mostrarPregunta() {
+    const q = quizPreguntas[quizIndex];
+    const info = elementos[q.sim];
+    const total = quizPreguntas.length;
+
+    document.getElementById('quiz-progreso').textContent = `Pregunta ${quizIndex+1} / ${total}`;
+    document.getElementById('quiz-feedback').textContent = '';
+    document.getElementById('quiz-feedback').className = 'quiz-feedback';
+    const input = document.getElementById('quiz-input');
+    input.value = '';
+    input.className = 'quiz-input';
+    input.removeAttribute('disabled');
+
+    const configs = {
+        'signo-a-numero':  { pregunta: '¿Cuál es el número atómico?',       grande: q.sim,          sub: info.name,              placeholder: 'Escribe el número atómico...' },
+        'nombre-a-numero': { pregunta: '¿Cuál es el número atómico?',       grande: info.name,      sub: '',                     placeholder: 'Escribe el número atómico...' },
+        'numero-a-nombre': { pregunta: '¿Cuál es el nombre de este elemento?', grande: String(info.number), sub: 'Número atómico', placeholder: 'Escribe el nombre...' },
+        'numero-a-signo':  { pregunta: '¿Cuál es el símbolo de este elemento?', grande: String(info.number), sub: 'Número atómico', placeholder: 'Escribe el símbolo...' },
+        'signo-a-nombre':  { pregunta: '¿Cuál es el nombre de este elemento?', grande: q.sim,        sub: info.number,            placeholder: 'Escribe el nombre...' },
+        'nombre-a-signo':  { pregunta: '¿Cuál es el símbolo de este elemento?', grande: info.name,   sub: '',                     placeholder: 'Escribe el símbolo...' },
+    };
+
+    const cfg = configs[q.tipo];
+    document.getElementById('quiz-pregunta').textContent = cfg.pregunta;
+    document.getElementById('quiz-elemento-grande').textContent = cfg.grande;
+    document.getElementById('quiz-sub').textContent = cfg.sub;
+    input.placeholder = cfg.placeholder;
+    input.focus();
+}
+
+function verificarRespuesta() {
+    const q = quizPreguntas[quizIndex];
+    const info = elementos[q.sim];
+    const input = document.getElementById('quiz-input');
+    const resp = input.value.trim().toLowerCase();
+    if (!resp) return;
+
+    let correcto = false;
+    let respCorrecta = '';
+
+    if (q.tipo === 'signo-a-numero' || q.tipo === 'nombre-a-numero') {
+        correcto = parseInt(resp) === info.number;
+        respCorrecta = String(info.number);
+    } else if (q.tipo === 'numero-a-nombre' || q.tipo === 'signo-a-nombre') {
+        correcto = resp === info.name.toLowerCase();
+        respCorrecta = info.name;
+    } else { // numero-a-signo o nombre-a-signo
+        correcto = resp === q.sim.toLowerCase();
+        respCorrecta = q.sim;
+    }
+
+    quizResultados.push({ sim: q.sim, tipo: q.tipo, correcto, respCorrecta });
+    input.classList.add(correcto ? 'correcto' : 'incorrecto');
+    input.setAttribute('disabled', true);
+
+    const fb = document.getElementById('quiz-feedback');
+    if (correcto) {
+        fb.textContent = '✅ ¡Correcto!';
+        fb.className = 'quiz-feedback ok';
+    } else {
+        fb.textContent = `❌ Respuesta correcta: ${respCorrecta}`;
+        fb.className = 'quiz-feedback';
+    }
+
+    setTimeout(() => {
+        quizIndex++;
+        if (quizIndex < quizPreguntas.length) {
+            mostrarPregunta();
+        } else {
+            completarSesion();
+        }
+    }, 1100);
+}
+
+// ========== SESIÓN ==========
+function completarSesion() {
+    sessionCompleted++;
+    sessionStorage.setItem('sesionesCompletadas', String(sessionCompleted));
+    if (sessionCompleted >= 1) {
+        document.getElementById('btn-examen').style.display = 'block';
+    }
+    mostrarResultados();
+}
+
+// ========== EXAMEN ==========
+function mostrarExamenConfig() {
+    const cont = document.getElementById('examen-sub-opciones');
+    cont.innerHTML = '';
+
+    const titulo = document.getElementById('titulo-examen-config');
+    titulo.textContent = 'Examen – Elige el modo';
+
+    // Mode selector for exam
+    const modosDiv = document.createElement('div');
+    modosDiv.style.cssText = 'display:flex;flex-direction:column;gap:10px;width:100%;';
+
+    let examenModoSel = null;
+    let paso2Shown = false;
+
+    const modos = [
+        {key:'nombre',label:'Por Nombre'},
+        {key:'signo',label:'Por Signo'},
+        {key:'numero',label:'Por Número Atómico'},
+    ];
+
+    const paso2 = document.createElement('div');
+    paso2.style.cssText = 'display:none;flex-direction:column;gap:10px;width:100%;margin-top:8px;';
+    paso2.innerHTML = `
+        <button class="btn-opcion" id="examen-aleatorio-btn">Aleatorio</button>
+        <button class="btn-opcion" id="examen-clase-btn">Por Clase</button>
+    `;
+
+    modos.forEach(m => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-opcion';
+        btn.textContent = m.label;
+        btn.addEventListener('click', () => {
+            examenModoSel = m.key;
+            modosDiv.querySelectorAll('.btn-opcion').forEach(b => { b.style.background=''; b.style.color=''; });
+            btn.style.background = '#4287f5'; btn.style.color = 'white';
+            paso2.style.display = 'flex';
+        });
+        modosDiv.appendChild(btn);
+    });
+
+    cont.appendChild(modosDiv);
+    cont.appendChild(paso2);
+
+    // Aleatorio para examen
+    document.getElementById('examen-aleatorio-btn').addEventListener('click', () => {
+        if (!examenModoSel) { alert('Elige un modo primero'); return; }
+        modoActual = 'examen';
+        subModo = null;
+        elementosSeleccionados = shuffle(todosSimbolos);
+        irA('p-examen-warning');
+    });
+
+    // Por clase para examen
+    document.getElementById('examen-clase-btn').addEventListener('click', () => {
+        if (!examenModoSel) { alert('Elige un modo primero'); return; }
+        modoActual = 'examen';
+        // Show inline class selector
+        const claseDiv = document.createElement('div');
+        claseDiv.style.cssText = 'display:flex;flex-direction:column;gap:10px;width:100%;margin-top:8px;';
+        const gc = document.createElement('div');
+        gc.className = 'grid-clases';
+        gc.id = 'gc-examen';
+        claseDiv.appendChild(gc);
+        const btnConfirm = document.createElement('button');
+        btnConfirm.className = 'btn-confirmar';
+        btnConfirm.textContent = 'Continuar →';
+        btnConfirm.addEventListener('click', () => {
+            const sel = document.querySelector('#gc-examen .btn-clase.seleccionada');
+            if (!sel) { alert('Elige una clase'); return; }
+            elementosSeleccionados = shuffle(todosSimbolos.filter(s => elementos[s].category === sel.dataset.key));
+            irA('p-examen-warning');
+        });
+        claseDiv.appendChild(btnConfirm);
+        paso2.appendChild(claseDiv);
+        buildGrid('gc-examen');
+    });
+
+    irA('p-examen-config');
+}
+
+function iniciarExamen() {
+    empezarQuiz(true);
+}
+
+// ========== RESULTADOS ==========
+function mostrarResultados() {
+    const total = quizResultados.length;
+    const bien = quizResultados.filter(r => r.correcto).length;
+    const mal = total - bien;
+    const pctBien = total > 0 ? Math.round((bien/total)*100) : 0;
+    const pctMal = 100 - pctBien;
+
+    document.getElementById('resultado-score').textContent = `${bien} / ${total}`;
+    document.getElementById('resultado-sub').textContent = esExamen ? 'Resultado del Examen' : 'Respuestas correctas';
+    document.getElementById('pct-bien').textContent = pctBien + '%';
+    document.getElementById('pct-mal').textContent = pctMal + '%';
+    document.getElementById('lista-detalle').style.display = 'none';
+    irA('p-resultados');
+}
+
+function toggleDetalle() {
+    const lista = document.getElementById('lista-detalle');
+    if (lista.style.display === 'none') {
+        lista.innerHTML = '';
+        quizResultados.forEach(r => {
+            const info = elementos[r.sim];
+            const item = document.createElement('div');
+            item.className = `detalle-item ${r.correcto ? 'bien' : 'mal'}`;
+            const tipoLabel = {
+                'signo-a-numero': `${r.sim} → Nº`,
+                'nombre-a-numero': `${info.name} → Nº`,
+                'numero-a-nombre': `Nº ${info.number} → nombre`,
+                'numero-a-signo': `Nº ${info.number} → símbolo`,
+                'signo-a-nombre': `${r.sim} → nombre`,
+                'nombre-a-signo': `${info.name} → símbolo`,
+            }[r.tipo] || r.tipo;
+            item.innerHTML = `
+                <span class="simbolo-d">${r.sim}</span>
+                <span>${tipoLabel}</span>
+                <span class="detalle-respuesta">${r.correcto ? '✅' : `❌ ${r.respCorrecta}`}</span>`;
+            lista.appendChild(item);
+        });
+        lista.style.display = 'flex';
+    } else {
+        lista.style.display = 'none';
+    }
+}
+
+// ========== INIT ==========
+// Restore exam button if sessions done
+if (sessionCompleted >= 1) {
+    document.getElementById('btn-examen').style.display = 'block';
+}
+</script>
+</body>
+</html>
